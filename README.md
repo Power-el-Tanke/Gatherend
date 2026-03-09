@@ -1,7 +1,22 @@
-Hola xd, si estas leyendo esto, Gatherend probablemente tuvo exito y pude tener un equipo para apoyarme a hacerlo, gracias :D.
-23/01/2026, 5 meses en esto xd.
-Gatherend es una web app en la cual solo existen grupos de 1 a 49 personas.
-Es un monorepo con dos proyectos: /gatherend-web y /express
-/gatherend-web esta basado en Next como framework, cuenta con algo de backend y todo el frontend.
-/express esta basado en Express y cuenta con solo backend para cosas mas complejas como chat, Redis, notificaciones, etc.
-El proyecto esta bastante modularizado asi que no creo que te sea tan complejo ubicarte, si tienes alguna duda, dímelo XD!
+# Gatherend
+
+Hi xD, this is Gatherend, a real-time communication platform designed for micro-communities of 1 to 49 people to make socializing easier.
+
+## Features
+
+Gatherend provides real-time voice with screen and video sharing, real-time chat organized by channels, image sharing, customizable app themes, custom sticker uploads, direct messaging, and the ability to join or create boards. And the main feature: In Gatherend there are no boards bigger than 49 members :D!
+
+## Tech Stack and Annotations
+
+- **Voice:** Built on LiveKit. Token generation is handled in `apps/gatherend-web/src/app/api/livekit/route.ts` and client-side configuration is in `apps/gatherend-web/src/components/providers/voice-livekit-provider.tsx`.
+- **Sockets:** Socket.IO implementation is located in `apps/express/sockets`.
+- **Backend:** CRUD-related endpoints are implemented in Next.js, while real-time functionality is handled by Express endpoints.
+- **Frontend:** Next.js, React, and Tailwind CSS are my main frameworks. Additional dependencies include TanStack Query, which is used extensively throughout the project.
+- **Auth:** Better Auth handles all authentication logic. The implementation relies entirely on Better Auth utilities rather than custom auth code.
+- **Database:** PostgreSQL is my primary database.
+- **Redis:** Used for caching and real-time features. Configurations can be found in the respective `redis.ts` files in `/gatherend-web` and `/express`.
+- **Other services:** imgproxy for image transformations, DiceBear for avatar generation, and NudeNet for image moderation.
+
+## Roadmap
+
+My current priorities are completing app features and fixing the board caching system, followed by a client redesign, then focusing on self-hosting capabilities.
