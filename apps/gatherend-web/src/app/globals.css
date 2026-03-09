@@ -1,0 +1,474 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* THEME SYSTEM - Dynamic user theme colors */
+  --color-theme-bg-primary: var(--theme-bg-primary);
+  --color-theme-bg-overlay-primary: var(--theme-bg-overlay-primary);
+  --color-theme-bg-dropdown-menu-primary: var(--theme-bg-dropdown-menu-primary);
+  --color-theme-bg-secondary: var(--theme-bg-secondary);
+  --color-theme-bg-tertiary: var(--theme-bg-tertiary);
+  --color-theme-bg-quaternary: var(--theme-bg-quaternary);
+  --color-theme-bg-input-plus: var(--theme-bg-input-plus);
+  --color-theme-bg-quinary: var(--theme-bg-quinary);
+  --color-theme-bg-input: var(--theme-bg-input);
+  --color-theme-accent-primary: var(--theme-accent-primary);
+  --color-theme-accent-light: var(--theme-accent-light);
+  --color-theme-accent-hover: var(--theme-accent-hover);
+  --color-theme-border-primary: var(--theme-border-primary);
+  --color-theme-border-secondary: var(--theme-border-secondary);
+  --color-theme-button-primary: var(--theme-button-primary);
+  --color-theme-button-hover: var(--theme-button-hover);
+  --color-theme-button-send-hover: var(--theme-button-send-hover);
+  --color-theme-text-accent: var(--theme-text-accent);
+  --color-theme-text-muted: var(--theme-text-muted);
+  --color-theme-text-light: var(--theme-text-light);
+  --color-theme-text-subtle: var(--theme-text-subtle);
+  --color-theme-text-primary: var(--theme-text-primary);
+  --color-theme-text-secondary: var(--theme-text-secondary);
+  --color-theme-text-tertiary: var(--theme-text-tertiary);
+  --color-theme-text-inverse: var(--theme-text-inverse);
+  --color-theme-channel-bg: var(--theme-channel-bg);
+  --color-theme-channel-hover: var(--theme-channel-hover);
+  --color-theme-channel-active: var(--theme-channel-active);
+  --color-theme-tooltip-bg: var(--theme-tooltip-bg);
+  --color-theme-avatar-fallback-bg: var(--theme-avatar-fallback-bg);
+  --color-theme-picker-bg: var(--theme-picker-bg);
+  --color-theme-picker-border: var(--theme-picker-border);
+  --color-theme-menu-hover: var(--theme-menu-hover);
+  --color-theme-menu-accent-text: var(--theme-menu-accent-text);
+  --color-theme-nav-action-bg: var(--theme-nav-action-bg);
+  --color-theme-nav-action-hover: var(--theme-nav-action-hover);
+  --color-theme-add-friend-icon: var(--theme-add-friend-icon);
+  --color-theme-add-friend-hover: var(--theme-add-friend-hover);
+  --color-theme-text-muted-alt: var(--theme-text-muted-alt);
+  --color-theme-tab-active-bg: var(--theme-tab-active-bg);
+  --color-theme-tab-button-bg: var(--theme-tab-button-bg);
+  --color-theme-tab-button-hover: var(--theme-tab-button-hover);
+  --color-theme-toolbar-bg: var(--theme-toolbar-bg);
+  --color-theme-toolbar-icon: var(--theme-toolbar-icon);
+  --color-theme-toolbar-border: var(--theme-toolbar-border);
+  --color-theme-dropdown-bg: var(--theme-dropdown-bg);
+  --color-theme-dropdown-border: var(--theme-dropdown-border);
+  --color-theme-dropdown-hover: var(--theme-dropdown-hover);
+  --color-theme-reaction-active-bg: var(--theme-reaction-active-bg);
+  --color-theme-reaction-active-border: var(--theme-reaction-active-border);
+  --color-theme-reaction-active-text: var(--theme-reaction-active-text);
+  --color-theme-reaction-bg: var(--theme-reaction-bg);
+  --color-theme-reaction-border: var(--theme-reaction-border);
+  --color-theme-reaction-text: var(--theme-reaction-text);
+  --color-theme-slot-discovery-icon: var(--theme-slot-discovery-icon);
+  --color-theme-slot-discovery-bg: var(--theme-slot-discovery-bg);
+  --color-theme-slot-invitation-icon: var(--theme-slot-invitation-icon);
+  --color-theme-slot-invitation-bg: var(--theme-slot-invitation-bg);
+  --color-theme-slot-border: var(--theme-slot-border);
+  --color-theme-bg-modal: var(--theme-bg-modal);
+  --color-theme-bg-input-modal: var(--theme-bg-input-modal);
+  --color-theme-bg-cancel-button: var(--theme-bg-cancel-button);
+  --color-theme-bg-cancel-button-hover: var(--theme-bg-cancel-button-hover);
+  --color-theme-chat-input-icon: var(--theme-chat-input-icon);
+  --color-theme-chat-input-icon-hover: var(--theme-chat-input-icon-hover);
+  --color-theme-channel-type-active-border: var(
+    --theme-channel-type-active-border
+  );
+  --color-theme-channel-type-active-bg: var(--theme-channel-type-active-bg);
+  --color-theme-channel-type-active-text: var(--theme-channel-type-active-text);
+  --color-theme-channel-type-inactive-bg: var(--theme-channel-type-inactive-bg);
+  --color-theme-channel-type-inactive-border: var(
+    --theme-channel-type-inactive-border
+  );
+  --color-theme-channel-type-inactive-hover-border: var(
+    --theme-channel-type-inactive-hover-border
+  );
+  --color-theme-channel-type-inactive-text: var(
+    --theme-channel-type-inactive-text
+  );
+  --color-theme-app-settings-hover: var(--theme-app-settings-hover);
+  --color-theme-accent-custom-user-button: var(
+    --theme-accent-custom-user-button
+  );
+  --color-theme-bg-tab-hover: var(--theme-bg-tab-hover);
+  --color-theme-border-accent-item-reply-preview: var(
+    --theme-border-accent-item-reply-preview
+  );
+  --color-theme-border-accent-active-channel: var(
+    --theme-border-accent-active-channel
+  );
+  --color-theme-bg-edit-form: var(--theme-bg-edit-form);
+
+  /* Role colors */
+  --color-role-owner-bg: var(--role-owner-bg);
+  --color-role-owner-text: var(--role-owner-text);
+  --color-role-admin-bg: var(--role-admin-bg);
+  --color-role-admin-text: var(--role-admin-text);
+  --color-role-mod-bg: var(--role-mod-bg);
+  --color-role-mod-text: var(--role-mod-text);
+  --color-role-guest-bg: var(--role-guest-bg);
+  --color-role-guest-text: var(--role-guest-text);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  /* Theme system defaults (Teal palette) - Dark mode (DEFAULT) */
+  --theme-bg-primary: #1b2a28;
+  --theme-bg-overlay-primary: #1b2a28;
+  --theme-bg-dropdown-menu-primary: #1b2a28;
+  --theme-bg-secondary: #263c3a;
+  --theme-bg-tertiary: #304342;
+  --theme-bg-quaternary: #39524f;
+  --theme-bg-input-plus: #39524f;
+  --theme-bg-quinary: #233533;
+  --theme-bg-input: #263c3a;
+  --theme-accent-primary: #2e8376;
+  --theme-accent-light: #9ad0c2;
+  --theme-accent-hover: #87ccc5;
+  --theme-border-primary: #3a5b58;
+  --theme-border-secondary: #2f4745;
+  --theme-button-primary: #368780;
+  --theme-button-hover: #3c9c94;
+  --theme-button-send-hover: #3a9b8f;
+  --theme-text-accent: #9ad0c2;
+  --theme-text-muted: #a1a9a7;
+  --theme-text-light: #e9f4f3;
+  --theme-text-subtle: #afc7c3;
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #d1d5db;
+  --theme-text-tertiary: #9ca3af;
+  --theme-text-inverse: #1f2937;
+  --theme-channel-bg: #2f4745;
+  --theme-channel-hover: #34514e;
+  --theme-channel-active: #3a5753;
+  --theme-tooltip-bg: #3a726b;
+  --theme-avatar-fallback-bg: #2f4745;
+  --theme-picker-bg: #3d554f;
+  --theme-picker-border: #273532;
+  --theme-menu-hover: #233b38;
+  --theme-menu-accent-text: #1d9e82;
+  --theme-nav-action-bg: #233b38;
+  --theme-nav-action-hover: #2e8376;
+  --theme-add-friend-icon: #2d9e8d;
+  --theme-add-friend-hover: #87ccc5;
+  --theme-text-muted-alt: #71717a;
+  --theme-tab-active-bg: #263b3a;
+  --theme-tab-button-bg: #2e8376;
+  --theme-tab-button-hover: #3c9c94;
+  --theme-toolbar-bg: #233b38;
+  --theme-toolbar-icon: #adc4c0;
+  --theme-toolbar-border: #2b4744;
+  --theme-dropdown-bg: #273f3d;
+  --theme-dropdown-border: #304947;
+  --theme-dropdown-hover: #2d4845;
+  --theme-reaction-active-bg: #2a4f4a;
+  --theme-reaction-active-border: #3c9288;
+  --theme-reaction-active-text: #d6e2df;
+  --theme-reaction-bg: #263e3b;
+  --theme-reaction-border: #2f4a47;
+  --theme-reaction-text: #cbd4d3;
+  --theme-slot-discovery-icon: #5ec8d4;
+  --theme-slot-discovery-bg: hsla(186, 58%, 60%, 0.1);
+  --theme-slot-invitation-icon: #e4ae68;
+  --theme-slot-invitation-bg: hsla(34, 70%, 65%, 0.1);
+  --theme-slot-border: rgba(255, 255, 255, 0.1);
+  --theme-bg-modal: #2a3b38;
+  --theme-bg-input-modal: #394a47;
+  --theme-bg-cancel-button: #394846;
+  --theme-bg-cancel-button-hover: #424f4d;
+  --theme-chat-input-icon: #9dcec0;
+  --theme-chat-input-icon-hover: #7db8a8;
+  --theme-channel-type-active-border: #358349;
+  --theme-channel-type-active-bg: hsla(135, 42%, 36%, 0.4);
+  --theme-channel-type-active-text: #eaf5f5;
+  --theme-channel-type-inactive-bg: #394c48;
+  --theme-channel-type-inactive-border: #52525b;
+  --theme-channel-type-inactive-hover-border: #71717a;
+  --theme-channel-type-inactive-text: #d4d4d8;
+  --theme-app-settings-hover: #2f5c53;
+  --theme-accent-custom-user-button: #2b6359;
+  --theme-bg-tab-hover: #335a54;
+  --theme-border-accent-item-reply-preview: #2d7d6e;
+  --theme-border-accent-active-channel: #2d7d6e;
+  --theme-bg-edit-form: #384745;
+  --theme-background-gradient: none;
+  --theme-has-gradient: 0;
+
+  /* Role colors */
+  --role-owner-bg: #d4b05a;
+  --role-owner-text: #4a3e25;
+  --role-admin-bg: #a78bfa;
+  --role-admin-text: #3b2f52;
+  --role-mod-bg: #3a6f7f;
+  --role-mod-text: #20373e;
+  --role-guest-bg: #7d918c;
+  --role-guest-text: #2e3a38;
+}
+
+html,
+body,
+:root {
+  height: 100%;
+}
+
+/* Theme Gradient Background Support */
+/* El degradado se aplica al html cuando está activo */
+html[data-theme-gradient="true"] {
+  background: var(--theme-background-gradient) !important;
+  background-attachment: fixed !important;
+}
+
+/* Cuando hay degradado, el body debe ser transparente para mostrar el gradiente del html */
+html[data-theme-gradient="true"] body {
+  background: transparent !important;
+}
+
+/* AppShell main debe ser transparente cuando hay degradado */
+html[data-theme-gradient="true"] .app-shell-main {
+  background: transparent !important;
+}
+
+/* Indicator Ring - Soporta tanto color sólido como degradado */
+/* En modo normal: usa el color de fondo del tema (o variable personalizada) */
+.indicator-ring {
+  background: var(--indicator-ring-color, var(--theme-bg-secondary));
+}
+
+/* En modo degradado: usa el mismo degradado que el fondo con fixed attachment */
+html[data-theme-gradient="true"] .indicator-ring {
+  background: var(--theme-background-gradient);
+  background-attachment: fixed;
+}
+
+/* Indicator Ring con posición calculada manualmente */
+/* Para elementos dentro de contenedores con transform donde background-attachment: fixed no funciona */
+html[data-theme-gradient="true"] .indicator-ring-viewport {
+  background: var(--theme-background-gradient);
+  background-size: 100vw 100vh;
+  background-position: calc(-1 * var(--viewport-x, 0px))
+    calc(-1 * var(--viewport-y, 0px));
+}
+
+/* Indicator Ring para slots del grid de miembros */
+/* Usa posición relativa del slot para evitar event listeners de scroll/resize */
+html[data-theme-gradient="true"] .indicator-ring-slot {
+  background: var(--theme-background-gradient);
+  background-attachment: fixed;
+}
+
+/* Los fondos principales se vuelven semi-transparentes via JS (applyTransparencyToBackgrounds) */
+
+.cl-avatarBox {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Scrollbar ultra delgado para descripción de cards */
+.scrollbar-ultra-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-ultra-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-ultra-thin::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-card-thumb, rgba(255, 255, 255, 0.1));
+  border-radius: 3px;
+  background-clip: padding-box;
+}
+
+.scrollbar-ultra-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-card-thumb-hover, rgba(255, 255, 255, 0.2));
+}
+
+/* Firefox */
+.scrollbar-ultra-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-card-thumb, rgba(255, 255, 255, 0.1))
+    transparent;
+}
+
+/* Navigation Sidebar Scrollbar */
+.scrollbar-navigation::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-navigation::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.scrollbar-navigation::-webkit-scrollbar-thumb {
+  background-color: var(--theme-scrollbar-nav-thumb, rgba(0, 0, 0, 0.2));
+  border-radius: 3px;
+}
+.scrollbar-navigation::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-scrollbar-nav-thumb-hover, rgba(0, 0, 0, 0.3));
+}
+
+/* Hide scrollbar (keep scrolling) */
+.scrollbar-hidden {
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Chat & Discovery Feed Scrollbar */
+.scrollbar-chat::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-chat::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.scrollbar-chat::-webkit-scrollbar-thumb {
+  background-color: var(--theme-scrollbar-main-thumb, rgba(0, 0, 0, 0.2));
+  border-radius: 1px;
+}
+.scrollbar-chat::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-scrollbar-main-thumb-hover, rgba(0, 0, 0, 0.3));
+}
+
+/* Username Gradient Animations */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradient-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gradient-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.animate-gradient-shimmer {
+  background-size: 200% 100%;
+  animation: gradient-shimmer 2s linear infinite;
+}
+
+.animate-gradient-pulse {
+  animation: gradient-pulse 2s ease-in-out infinite;
+}
+
+/* Username gradient hover animations - only animate on hover */
+.username-gradient-shift,
+.username-gradient-shimmer,
+.username-gradient-pulse {
+  transition: filter 0.2s ease;
+}
+
+.username-gradient-shift:hover {
+  animation: gradient-shift 3s ease infinite;
+}
+
+.username-gradient-shimmer:hover {
+  background-size: 200% 100% !important;
+  animation: gradient-shimmer 2s linear infinite;
+}
+
+.username-gradient-pulse:hover {
+  animation: gradient-pulse 2s ease-in-out infinite;
+}

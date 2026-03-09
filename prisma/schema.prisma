@@ -1,0 +1,632 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Friendship {
+  id          String           @id @default(uuid())
+  requesterId String
+  receiverId  String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  receiver    Profile          @relation("FriendReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  requester   Profile          @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, receiverId])
+  @@index([receiverId])
+}
+
+model Profile {
+  id                     String            @id @default(uuid())
+  imageUrl               String
+  email                  String
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  languages              Languages[]       @default([EN])
+  discriminator          String            @default("xxx")
+  username               String
+  userId                 String            @unique
+  badge                  String?           @db.VarChar(30)
+  longDescription        String?           @db.VarChar(200)
+  badgeStickerUrl        String?
+  themeConfig            Json?
+  banReason              String?
+  banned                 Boolean           @default(false)
+  bannedAt               DateTime?
+  falseReports           Int               @default(0)
+  reportAccuracy         Float?
+  validReports           Int               @default(0)
+  profileTags            String[]          @default([])
+  usernameColor          Json?
+  usernameFormat         Json?
+  boards                 Board[]
+  boardBans              BoardBan[]
+  categories             Category[]
+  channels               Channel[]
+  createdCommunities     Community[]       @relation("CommunityCreatedBy")
+  communityHelpers       CommunityHelper[]
+  conversationsInitiated Conversation[]    @relation("ProfileOne")
+  conversationsReceived  Conversation[]    @relation("ProfileTwo")
+  directMessages         DirectMessage[]
+  receivedFriendRequests Friendship[]      @relation("FriendReceiver")
+  sentFriendRequests     Friendship[]      @relation("FriendRequester")
+  members                Member[]
+  mentions               Mention[]         @relation("MentionedProfile")
+  reactions              Reaction[]        @relation("ProfileReactions")
+  reportsMade            Report[]          @relation("ReportsMade")
+  reportsAgainst         Report[]          @relation("ReportsReceived")
+  authIdentities         AuthIdentity[]
+  uploadedStickers       Sticker[]         @relation("StickerUploader")
+  strikes                Strike[]
+
+  @@unique([username, discriminator])
+  @@index([username])
+  @@index([discriminator])
+}
+
+model AuthIdentity {
+  id             String       @id @default(uuid())
+  provider       AuthProvider
+  providerUserId String
+  profileId      String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  profile        Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@unique([provider, profileId])
+  @@index([profileId])
+  @@index([providerUserId])
+}
+
+model Slot {
+  id        String   @id @default(uuid())
+  mode      SlotMode @default(BY_INVITATION)
+  memberId  String?
+  boardId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  member    Member?  @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
+  @@index([boardId])
+  @@index([boardId, mode, memberId])
+  @@index([mode, memberId])
+}
+
+model Community {
+  id             String            @id @default(uuid())
+  name           String            @unique
+  imageUrl       String?
+  createdById    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  // Materialized fields for discovery feed ranking (updated by cron)
+  memberCount    Int               @default(0)
+  feedBoardCount Int               @default(0)
+  rankingScore   Float             @default(0)
+  rankedAt       DateTime          @default(now())
+  boards         Board[]
+  createdBy      Profile?          @relation("CommunityCreatedBy", fields: [createdById], references: [id])
+  helpers        CommunityHelper[]
+
+  @@index([rankingScore(sort: Desc), id])
+}
+
+model CommunityHelper {
+  id          String    @id @default(uuid())
+  communityId String
+  profileId   String
+  createdAt   DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, profileId])
+  @@index([profileId])
+}
+
+model Board {
+  id                    String                   @id @default(uuid())
+  name                  String
+  description           String?
+  imageUrl              String?
+  inviteCode            String                   @unique
+  inviteEnabled         Boolean                  @default(true)
+  size                  Int                      @default(5)
+  profileId             String?
+  createdAt             DateTime                 @default(now())
+  refreshedAt           DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  document_with_weights Unsupported("tsvector")?
+  languages             Languages[]              @default([EN])
+  hiddenFromFeed        Boolean                  @default(false)
+  reportCount           Int                      @default(0)
+  communityId           String?
+  community             Community?               @relation(fields: [communityId], references: [id])
+  profile               Profile?                 @relation(fields: [profileId], references: [id])
+  boardBans             BoardBan[]
+  categories            Category[]
+  channels              Channel[]
+  members               Member[]
+  slots                 Slot[]
+
+  @@index([profileId])
+  @@index([refreshedAt])
+  @@index([languages])
+  @@index([hiddenFromFeed])
+  @@index([communityId])
+}
+
+model BoardBan {
+  id        String   @id @default(uuid())
+  boardId   String
+  profileId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, profileId])
+  @@index([boardId, profileId])
+}
+
+model Member {
+  id        String     @id @default(uuid())
+  role      MemberRole @default(GUEST)
+  profileId String
+  boardId   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  board     Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  profile   Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  slots     Slot[]
+
+  @@index([profileId])
+  @@index([boardId])
+  @@index([boardId, profileId])
+  @@index([boardId, profileId, role])
+  @@index([profileId, role])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  position  Float     @default(1000)
+  profileId String?
+  boardId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  board     Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  profile   Profile?  @relation(fields: [profileId], references: [id])
+  channels  Channel[]
+
+  @@index([boardId])
+}
+
+model Channel {
+  id         String             @id @default(uuid())
+  name       String
+  type       ChannelType        @default(TEXT)
+  position   Float              @default(1000)
+  profileId  String?
+  boardId    String
+  parentId   String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  board      Board              @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  parent     Category?          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  profile    Profile?           @relation(fields: [profileId], references: [id])
+  readStates ChannelReadState[]
+  messages   Message[]
+
+  @@index([profileId])
+  @@index([boardId])
+  @@index([parentId])
+  @@index([boardId, parentId])
+}
+
+model Message {
+  id         String      @id @default(uuid())
+  content    String
+  fileUrl    String?
+  /// Stable object key for private attachments (served via attachments gateway).
+  /// When present, APIs should generate a signed URL at read time and avoid persisting expiring URLs.
+  fileKey    String?
+  fileName   String?
+  fileType   String?
+  fileSize   Int?
+  /// Original asset dimensions (used by client to reserve layout space and avoid reflow).
+  fileWidth  Int?
+  fileHeight Int?
+  memberId   String?
+  channelId  String
+  deleted    Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  type       MessageType @default(TEXT)
+  stickerId  String?
+  replyToId  String?
+  pinned     Boolean     @default(false)
+  pinnedAt   DateTime?
+  pinnedById String?
+  mentions   Mention[]
+  channel    Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  member     Member?     @relation(fields: [memberId], references: [id])
+  replyTo    Message?    @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies    Message[]   @relation("MessageReplies")
+  sticker    Sticker?    @relation("MessageSticker", fields: [stickerId], references: [id])
+  reactions  Reaction[]
+
+  @@index([channelId])
+  @@index([memberId])
+  @@index([stickerId])
+  @@index([replyToId])
+  @@index([channelId, createdAt(sort: Desc)])
+}
+
+model Reaction {
+  id              String         @id @default(uuid())
+  emoji           String
+  profileId       String
+  messageId       String?
+  directMessageId String?
+  createdAt       DateTime       @default(now())
+  directMessage   DirectMessage? @relation(fields: [directMessageId], references: [id], onDelete: Cascade)
+  message         Message?       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  profile         Profile        @relation("ProfileReactions", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, messageId, emoji])
+  @@unique([profileId, directMessageId, emoji])
+  @@index([messageId])
+  @@index([directMessageId])
+  @@index([profileId])
+}
+
+model Conversation {
+  id              String          @id @default(uuid())
+  createdAt       DateTime        @default(now())
+  profileOneId    String?
+  profileTwoId    String?
+  updatedAt       DateTime        @updatedAt
+  hiddenByOneAt   DateTime?
+  hiddenByTwoAt   DateTime?
+  lastReadByOneAt DateTime?
+  lastReadByTwoAt DateTime?
+  profileOne      Profile?        @relation("ProfileOne", fields: [profileOneId], references: [id])
+  profileTwo      Profile?        @relation("ProfileTwo", fields: [profileTwoId], references: [id])
+  directMessages  DirectMessage[]
+
+  @@unique([profileOneId, profileTwoId])
+  @@index([profileOneId])
+  @@index([profileTwoId])
+  @@index([profileOneId, profileTwoId])
+  @@index([profileTwoId, profileOneId])
+}
+
+model DirectMessage {
+  id             String          @id @default(uuid())
+  content        String
+  fileUrl        String?
+  /// Stable object key for private attachments (served via attachments gateway).
+  /// When present, APIs should generate a signed URL at read time and avoid persisting expiring URLs.
+  fileKey        String?
+  fileName       String?
+  fileType       String?
+  fileSize       Int?
+  /// Original asset dimensions (used by client to reserve layout space and avoid reflow).
+  fileWidth      Int?
+  fileHeight     Int?
+  conversationId String
+  deleted        Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  senderId       String?
+  stickerId      String?
+  replyToId      String?
+  pinned         Boolean         @default(false)
+  pinnedAt       DateTime?
+  pinnedById     String?
+  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  replyTo        DirectMessage?  @relation("DirectMessageReplies", fields: [replyToId], references: [id])
+  replies        DirectMessage[] @relation("DirectMessageReplies")
+  sender         Profile?        @relation(fields: [senderId], references: [id])
+  sticker        Sticker?        @relation("DirectMessageSticker", fields: [stickerId], references: [id])
+  reactions      Reaction[]
+
+  @@index([senderId])
+  @@index([conversationId])
+  @@index([stickerId])
+  @@index([replyToId])
+  @@index([conversationId, createdAt(sort: Desc)])
+}
+
+model Sticker {
+  id             String          @id @default(uuid())
+  name           String
+  imageUrl       String
+  category       String
+  createdAt      DateTime        @default(now())
+  isCustom       Boolean         @default(false)
+  publicId       String?
+  uploaderId     String?
+  directMessages DirectMessage[] @relation("DirectMessageSticker")
+  messages       Message[]       @relation("MessageSticker")
+  uploader       Profile?        @relation("StickerUploader", fields: [uploaderId], references: [id])
+
+  @@index([category])
+  @@index([uploaderId])
+}
+
+model IdempotencyKey {
+  id           String   @id
+  endpoint     String
+  userId       String
+  bodyHash     String
+  responseJson String
+  statusCode   Int
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Mention {
+  id        String   @id @default(uuid())
+  messageId String
+  profileId String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation("MentionedProfile", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, profileId])
+  @@index([profileId])
+  @@index([messageId])
+  @@index([profileId, read])
+}
+
+model ChannelReadState {
+  id          String   @id @default(uuid())
+  profileId   String
+  channelId   String
+  lastReadAt  DateTime @default(now())
+  unreadCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, channelId])
+  @@index([profileId])
+  @@index([channelId])
+}
+
+model ModerationCache {
+  id         String   @id @default(cuid())
+  hash       String   @unique
+  blocked    Boolean
+  reason     String?
+  severity   String?
+  labels     Json?
+  confidence Float?
+  context    String?
+  hits       Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([hash])
+  @@index([blocked])
+  @@index([createdAt])
+}
+
+model Strike {
+  id               String    @id @default(cuid())
+  profileId        String
+  reason           String
+  severity         String
+  contentType      String
+  imageHash        String?
+  appealStatus     String    @default("none")
+  appealedAt       DateTime?
+  appealNotes      String?
+  createdAt        DateTime  @default(now())
+  appealResolvedAt DateTime?
+  appealResolvedBy String?
+  autoDetected     Boolean   @default(false)
+  expiresAt        DateTime?
+  originReportId   String?   @unique
+  snapshot         Json?
+  originReport     Report?   @relation("ReportStrike", fields: [originReportId], references: [id])
+  profile          Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([appealStatus])
+  @@index([expiresAt])
+}
+
+model Report {
+  id              String           @id @default(cuid())
+  reporterId      String
+  targetId        String
+  description     String?
+  priority        String           @default("medium")
+  resolution      String?
+  resolvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  actionTaken     String?
+  resolvedById    String?
+  snapshot        Json
+  targetOwnerId   String?
+  targetType      ReportTargetType
+  category        ReportCategory
+  status          ReportStatus     @default(PENDING)
+  reporter        Profile          @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetOwner     Profile?         @relation("ReportsReceived", fields: [targetOwnerId], references: [id])
+  resultingStrike Strike?          @relation("ReportStrike")
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([status])
+  @@index([priority])
+  @@index([reporterId])
+  @@index([targetOwnerId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@index([category])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+enum Languages {
+  EN
+  ES
+}
+
+enum ReportTargetType {
+  MESSAGE
+  DIRECT_MESSAGE
+  PROFILE
+  BOARD
+  COMMUNITY
+}
+
+enum ReportCategory {
+  CSAM
+  SEXUAL_CONTENT
+  HARASSMENT
+  HATE_SPEECH
+  SPAM
+  IMPERSONATION
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  ACTION_TAKEN
+  DISMISSED
+}
+
+enum SlotMode {
+  BY_INVITATION
+  BY_DISCOVERY
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  GUEST
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
+  MAIN
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+  WELCOME
+  STICKER
+}
+
+enum AuthProvider {
+  CLERK
+  BETTER_AUTH
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model EmailSuppression {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  isSuppressed Boolean  @default(true)
+  reason       String
+  recordType   String
+  bounceType   String?
+  details      Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
+  @@map("email_suppression")
+}

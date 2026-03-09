@@ -1,0 +1,238 @@
+"use client";
+
+import { useMemo, useState, useEffect, useRef } from "react";
+import { User, Palette, Users, SquarePen } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useOverlayStore } from "@/hooks/use-overlay-store";
+import { useProfile } from "@/components/app-shell/providers/profile-provider";
+import { ThemeModal } from "@/components/modals/theme-modal";
+import { MyCommunitiesModal } from "@/components/modals/my-communities-modal";
+import type { ThemeConfig } from "@/lib/theme/types";
+import { useTranslation } from "@/i18n";
+import { getOptimizedStaticUiImageUrl } from "@/lib/ui-image-optimizer";
+
+export function CustomUserButton() {
+  // Obtener perfil desde el contexto (React Query - se actualiza automáticamente)
+  const profile = useProfile();
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isCommunitiesModalOpen, setIsCommunitiesModalOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { onOpen: onOpenOverlay } = useOverlayStore();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Usar datos del profile (fuente de verdad para SPA client-side)
+  const imageUrl = profile.imageUrl || "";
+  const userName = profile.username || "User";
+  const discriminator = profile.discriminator || null;
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const [forceOriginalImage, setForceOriginalImage] = useState(false);
+
+  useEffect(() => {
+    setAvatarFailed(false);
+    setForceOriginalImage(false);
+  }, [imageUrl]);
+
+  const displayImageUrl32 = useMemo(() => {
+    if (!imageUrl) return "";
+    if (forceOriginalImage) return imageUrl;
+    return getOptimizedStaticUiImageUrl(imageUrl, {
+      w: 32,
+      h: 32,
+      q: 82,
+      resize: "fill",
+      gravity: "sm",
+    });
+  }, [forceOriginalImage, imageUrl]);
+
+  const displayImageUrl40 = useMemo(() => {
+    if (!imageUrl) return "";
+    if (forceOriginalImage) return imageUrl;
+    return getOptimizedStaticUiImageUrl(imageUrl, {
+      w: 40,
+      h: 40,
+      q: 82,
+      resize: "fill",
+      gravity: "sm",
+    });
+  }, [forceOriginalImage, imageUrl]);
+
+  const handleAvatarError = () => {
+    if (!forceOriginalImage && imageUrl) {
+      setForceOriginalImage(true);
+      return;
+    }
+    setAvatarFailed(true);
+  };
+
+  const handleProfileClick = () => {
+    setIsOpen(false);
+    onOpenOverlay("profileSettings");
+  };
+
+  const handleThemeClick = () => {
+    setIsOpen(false);
+    setIsThemeModalOpen(true);
+  };
+
+  const handleCommunitiesClick = () => {
+    setIsOpen(false);
+    setIsCommunitiesModalOpen(true);
+  };
+
+  // Parse themeConfig from profile (Json field from Prisma)
+  const themeConfig = (profile as { themeConfig?: unknown })
+    .themeConfig as ThemeConfig | null;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {/* Avatar Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "relative flex items-center justify-center",
+          "w-8 h-8 rounded-full overflow-hidden",
+          "bg-zinc-700",
+          "hover:opacity-80 transition-opacity",
+          "focus:outline-none focus:ring-2 cursor-pointer focus:ring-theme-accent-custom-user-button focus:ring-offset-2 focus:ring-offset-theme-bg-primary"
+        )}
+        aria-label={t.userMenu.userMenuLabel}
+      >
+        {imageUrl && displayImageUrl32 && !avatarFailed ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={displayImageUrl32}
+            alt={userName}
+            className="w-full h-full object-cover"
+            loading="eager"
+            decoding="async"
+            onError={handleAvatarError}
+          />
+        ) : (
+          <User className="w-4 h-4 text-theme-text-secondary" />
+        )}
+      </button>
+
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div
+          className={cn(
+            "absolute right-0 top-full mt-2",
+            "w-56 rounded-md shadow-lg",
+            "bg-theme-bg-dropdown-menu-primary",
+            "border border-theme-border-secondary",
+            "z-50",
+            "animate-in fade-in slide-in-from-top-2 duration-200"
+          )}
+        >
+          {/* User Info Section */}
+          <div className="px-4 py-3 border-b border-theme-border-secondary">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-theme-bg-secondary flex items-center justify-center">
+                {imageUrl && displayImageUrl40 && !avatarFailed ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={displayImageUrl40}
+                    alt={userName}
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                    onError={handleAvatarError}
+                  />
+                ) : (
+                  <User className="w-5 h-5 text-theme-text-secondary" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-theme-text-primary truncate">
+                  {userName}
+                  {discriminator && (
+                    <span className="text-theme-text-tertiary font-normal">
+                      /{discriminator}
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-theme-text-tertiary truncate">
+                  {profile.email}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Menu Options */}
+          <div className="py-1">
+            <button
+              onClick={handleProfileClick}
+              className={cn(
+                "w-full text-left px-4 py-2 flex items-center gap-2",
+                "text-sm text-theme-text-secondary",
+                "hover:bg-theme-menu-hover focus:bg-theme-menu-hover",
+                "transition-colors cursor-pointer"
+              )}
+            >
+              <SquarePen className="w-4 h-4" />
+              {t.userMenu.profile}
+            </button>
+            <button
+              onClick={handleThemeClick}
+              className={cn(
+                "w-full text-left px-4 py-2 flex items-center gap-2",
+                "text-sm text-theme-text-secondary",
+                "hover:bg-theme-menu-hover focus:bg-theme-menu-hover",
+                "transition-colors cursor-pointer"
+              )}
+            >
+              <Palette className="w-4 h-4" />
+              {t.userMenu.myTheme}
+            </button>
+            <button
+              onClick={handleCommunitiesClick}
+              className={cn(
+                "w-full text-left px-4 py-2 flex items-center gap-2",
+                "text-sm text-theme-text-secondary",
+                "hover:bg-theme-menu-hover focus:bg-theme-menu-hover",
+                "transition-colors cursor-pointer"
+              )}
+            >
+              <Users className="w-4 h-4" />
+              {t.userMenu.myCommunities}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Theme Modal */}
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentThemeConfig={themeConfig}
+      />
+
+      {/* My Communities Modal */}
+      <MyCommunitiesModal
+        isOpen={isCommunitiesModalOpen}
+        onClose={() => setIsCommunitiesModalOpen(false)}
+      />
+    </div>
+  );
+}

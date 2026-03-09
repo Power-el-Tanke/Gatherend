@@ -1,0 +1,38 @@
+{ # Railway (and most PaaS) terminates TLS before reaching the container.
+auto_https off # Keep logs simple; Railway captures stdout.
+log {
+output stdout
+format console
+}
+}
+
+:{$PORT} {
+	# ------------------------
+	# Cloudflare Origin Verification - Block direct access
+	# ------------------------
+	# Using route to enforce sequential evaluation
+	route {
+		# Block requests not from Cloudflare
+		@not_from_cloudflare {
+			not header X-Origin-Verify "{$CF_ORIGIN_SECRET}"
+}
+handle @not_from_cloudflare {
+respond "Access denied" 403
+}
+
+    	# ------------------------
+    	# Express service (real-time API + Socket.IO)
+    	# ------------------------
+    	handle_path /api/r2/* {
+    		reverse_proxy {$EXPRESS_UPSTREAM}
+    	}
+
+    	# ------------------------
+    	# Next.js (default)
+    	# ------------------------
+    	handle {
+    		reverse_proxy {$NEXT_UPSTREAM}
+    	}
+    }
+
+}

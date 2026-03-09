@@ -1,0 +1,101 @@
+import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
+import { sanitizeUsername } from "./sanitize";
+import {
+  isDiscriminatorAvailable,
+  generateUniqueDiscriminator,
+} from "./discriminator";
+
+/**
+ * Cambia el username de un profile
+ *
+ * Lógica:
+ * - Si el discriminator actual está libre en el nuevo username → mantenerlo
+ * - Si hay conflicto → generar nuevo discriminator
+ *
+ * @returns El nuevo username completo y si el discriminator cambió
+ */
+export async function changeUsername(
+  profileId: string,
+  newUsername: string,
+): Promise<{
+  username: string;
+  discriminator: string;
+  discriminatorChanged: boolean;
+}> {
+  const profile = await db.profile.findUnique({
+    where: { id: profileId },
+    select: { discriminator: true, username: true, userId: true },
+  });
+
+  if (!profile) {
+    throw new Error("Profile not found");
+  }
+
+  const sanitized = sanitizeUsername(newUsername);
+  if (sanitized.length < 2 || sanitized.length > 20) {
+    throw new Error("Username must be between 2 and 20 characters");
+  }
+
+  // Verificar si podemos mantener el discriminator actual
+  const canKeep = await isDiscriminatorAvailable(
+    sanitized,
+    profile.discriminator,
+  );
+
+  if (canKeep) {
+    // Sin conflicto: mantener discriminator
+    await db.profile.update({
+      where: { id: profileId },
+      data: { username: sanitized },
+    });
+
+    await db.user.update({
+      where: { id: profile.userId },
+      data: { name: sanitized },
+      select: { id: true },
+    });
+
+    logger.server(
+      "[USERNAME_CHANGE] Kept discriminator:",
+      profile.discriminator,
+      "for new username:",
+      sanitized,
+    );
+
+    return {
+      username: sanitized,
+      discriminator: profile.discriminator,
+      discriminatorChanged: false,
+    };
+  }
+
+  // Hay conflicto: generar nuevo discriminator
+  const newDiscriminator = await generateUniqueDiscriminator(sanitized);
+
+  await db.profile.update({
+    where: { id: profileId },
+    data: { username: sanitized, discriminator: newDiscriminator },
+  });
+
+  await db.user.update({
+    where: { id: profile.userId },
+    data: { name: sanitized },
+    select: { id: true },
+  });
+
+  logger.server(
+    "[USERNAME_CHANGE] Changed discriminator from",
+    profile.discriminator,
+    "to",
+    newDiscriminator,
+    "for username:",
+    sanitized,
+  );
+
+  return {
+    username: sanitized,
+    discriminator: newDiscriminator,
+    discriminatorChanged: true,
+  };
+}

@@ -1,0 +1,18 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/gatherend-web/Dockerfile"
+
+[build.args]
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "${{NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}}"
+CLERK_SECRET_KEY = "${{CLERK_SECRET_KEY}}"
+NEXT_PUBLIC_SOCKET_URL = "${{NEXT_PUBLIC_SOCKET_URL}}"
+NEXT_PUBLIC_LIVEKIT_URL = "${{NEXT_PUBLIC_LIVEKIT_URL}}"
+NEXT_PUBLIC_API_URL = "${{NEXT_PUBLIC_API_URL}}"
+DATABASE_URL = "${{DATABASE_URL}}"
+DIRECT_URL = "${{DIRECT_URL}}"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
