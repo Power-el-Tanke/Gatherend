@@ -26,10 +26,16 @@ type SubscriptionSnapshot = {
 type SocketBinding = {
   socket: Socket;
   onConnect: () => void;
+  onVisibility: () => void;
 };
 
 const refCounts = new Map<string, number>();
 let socketBinding: SocketBinding | null = null;
+
+// Get tracked profile IDs for reconnection sync
+export function getTrackedProfileIds(): string[] {
+  return [...refCounts.keys()];
+}
 
 function ensureSocketBound(socket: Socket) {
   if (socketBinding?.socket === socket) return;
@@ -37,6 +43,8 @@ function ensureSocketBound(socket: Socket) {
   // Detach previous binding
   if (socketBinding) {
     socketBinding.socket.off("connect", socketBinding.onConnect);
+    window.removeEventListener("focus", socketBinding.onVisibility);
+    document.removeEventListener("visibilitychange", socketBinding.onVisibility);
     socketBinding = null;
   }
 
@@ -46,8 +54,18 @@ function ensureSocketBound(socket: Socket) {
     socket.emit("profile:subscribe", { profileIds: ids });
   };
 
+  // Re-subscribe when tab becomes visible after being backgrounded long enough
+  // for the server to have dropped the socket rooms.
+  const onVisibility = () => {
+    if (document.visibilityState !== "visible") return;
+    if (!socket.connected) return;
+    onConnect();
+  };
+
   socket.on("connect", onConnect);
-  socketBinding = { socket, onConnect };
+  window.addEventListener("focus", onVisibility);
+  document.addEventListener("visibilitychange", onVisibility);
+  socketBinding = { socket, onConnect, onVisibility };
 
   // If we're already connected, make sure the server has the rooms.
   if (socket.connected) {

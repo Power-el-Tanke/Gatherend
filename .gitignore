@@ -37,6 +37,7 @@ lerna-debug.log*
 # Environment variables - CRÍTICO
 .env
 .env.*
+!.env.example
 .env.local
 .env.development
 .env.development.local
@@ -64,6 +65,9 @@ next-env.d.ts
 
 # Específico del monorepo
 chat-module/.env*
+!chat-module/.env.example
 gatherend-web/.env*
+!gatherend-web/.env.example
 **/.env
 **/.env.*
+!**/.env.example
