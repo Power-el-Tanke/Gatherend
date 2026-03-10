@@ -52,6 +52,8 @@ lerna-debug.log*
 # Documentation files (no enviar a producción)
 *.md
 !README.md
+!SECURITY.md
+!CONTRIBUTING.md
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
