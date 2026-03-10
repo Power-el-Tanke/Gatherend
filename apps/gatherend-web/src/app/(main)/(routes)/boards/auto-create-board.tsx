@@ -45,7 +45,7 @@ export function AutoCreateBoard({ profile }: AutoCreateBoardProps) {
           profile.userId,
           firstLetter,
           256,
-        );
+        ) ?? "";
 
         // --- 3. Preparar nombre automático ---
         const displayName =

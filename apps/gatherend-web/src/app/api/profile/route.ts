@@ -356,7 +356,7 @@ export async function DELETE() {
       await generateUniqueDiscriminator(anonymizedUsername);
 
     // Generate a generic avatar based on the anonymized username
-    const anonymizedImageUrl = generateProfileAvatarUrl(anonymizedUsername);
+    const anonymizedImageUrl = generateProfileAvatarUrl(anonymizedUsername) ?? "";
 
     // Anonymize the profile in database
     const deletedProfile = await db.profile.update({

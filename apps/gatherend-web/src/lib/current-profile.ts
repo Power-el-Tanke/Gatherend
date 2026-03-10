@@ -217,7 +217,7 @@ function resolveInitialImageUrl(
   }
 
   // Use a stable seed not tied to email.
-  return generateProfileAvatarUrl(session.userId);
+  return generateProfileAvatarUrl(session.userId) ?? "";
 }
 
 async function createProfileForSession(
