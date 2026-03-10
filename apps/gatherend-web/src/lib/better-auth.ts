@@ -67,10 +67,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    onExistingUserSignUp: async ({ existingUser }) => {
+    onExistingUserSignUp: async ({ user }) => {
       const signInUrl = `${process.env.BETTER_AUTH_URL}/sign-in`;
       await sendPostmarkEmail({
-        to: existingUser.email,
+        to: user.email,
         subject: `Sign-up attempt for ${appName}`,
         textBody: `Someone tried to create an account with your email address. If this was you, sign in instead:\n\n${signInUrl}\n\nIf you didn't request this, you can ignore this email.`,
         htmlBody: `<p>Someone tried to create an account with your email address.</p><p>If this was you, <a href="${signInUrl}">sign in instead</a>.</p><p>If you didn't request this, you can ignore this email.</p>`,
